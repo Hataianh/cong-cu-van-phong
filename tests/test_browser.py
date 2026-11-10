@@ -9,6 +9,8 @@ import shutil
 import threading
 import unittest
 import zipfile
+from xml.etree import ElementTree as ET
+from xml.sax.saxutils import escape
 
 from playwright.sync_api import sync_playwright, expect
 
@@ -31,6 +33,18 @@ def word_fixture():
         z.writestr('_rels/.rels', '''<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>''')
         z.writestr('word/document.xml', '''<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Hợp đồng dịch vụ</w:t></w:r></w:p><w:p><w:r><w:t>Thanh toán vào ngày 15 tháng 11 năm 2026.</w:t></w:r></w:p><w:sectPr/></w:body></w:document>''')
     return {'name':'hop-dong.docx', 'mimeType':'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'buffer':data.getvalue()}
+
+
+def word_text_fixture(text):
+    fixture=word_fixture();output=io.BytesIO()
+    with zipfile.ZipFile(io.BytesIO(fixture['buffer'])) as source,zipfile.ZipFile(output,'w') as target:
+        for name in source.namelist():
+            data=source.read(name)
+            if name=='word/document.xml':
+                data=f'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>{escape(text)}</w:t></w:r></w:p><w:sectPr/></w:body></w:document>'.encode()
+            target.writestr(name,data)
+    fixture['buffer']=output.getvalue()
+    return fixture
 
 
 class BrowserTests(unittest.TestCase):
@@ -272,6 +286,55 @@ class BrowserTests(unittest.TestCase):
         output=self.downloaded('#gGo')
         size=self.page.evaluate('''async data=>{const image=await createImageBitmap(new Blob([Uint8Array.from(data)]));return [image.width,image.height];}''',list(output))
         self.assertEqual(size,[60,40])
+
+    def test_word_to_pdf_vietnamese_and_arrow_glyphs(self):
+        text='Hiểu ý & lập kế hoạch · Gọi công cụ (tool-use) · Tổng hợp câu trả lời kèm trích nguồn (prompt caching giảm chi phí). → Gọi công cụ / nhận kết quả đã lọc. ← ↔'
+        self.page.add_script_tag(url=self.base+'vendor/fontkit.umd.min.js')
+        missing=self.page.evaluate('''()=>{const fonts=JSON.parse(document.getElementById('pdfFonts').textContent);return Object.values(fonts).flatMap(base64=>{const font=fontkit.create(Uint8Array.from(atob(base64),c=>c.charCodeAt(0)));return [...'→←↔ấệ'].filter(char=>font.glyphForCodePoint(char.codePointAt(0)).id===0);});}''')
+        self.assertEqual(missing,[],'Symbols must have real outlines, not glyph 0/tofu')
+        self.go('word-sang-pdf');self.page.locator('#oFile').set_input_files(word_text_fixture(text))
+        data=self.downloaded('#oGo')
+        self.page.add_script_tag(url=self.base+'vendor/pdf.min.js')
+        extracted=self.page.evaluate('''async bytes=>{pdfjsLib.GlobalWorkerOptions.workerSrc='vendor/pdf.worker.min.js';const doc=await pdfjsLib.getDocument({data:Uint8Array.from(bytes),isEvalSupported:false}).promise;const page=await doc.getPage(1);const result=(await page.getTextContent()).items.map(item=>item.str).join(' ');await doc.destroy();return result;}''',list(data))
+        self.assertEqual(' '.join(extracted.split()),' '.join(text.split()))
+
+    def test_pdf_to_word_preserves_ruled_cells_and_bold_headings(self):
+        self.page.add_script_tag(url=self.base+'vendor/pdf-lib.min.js')
+        data=self.page.evaluate('''async()=>{
+            const doc=await PDFLib.PDFDocument.create(),regular=await doc.embedFont(PDFLib.StandardFonts.TimesRoman),bold=await doc.embedFont(PDFLib.StandardFonts.TimesRomanBold);
+            const makePage=(continued)=>{
+              const page=doc.addPage([595,842]);
+              page.drawText(continued?'Continued report':'Report heading',{x:50,y:790,size:14,font:bold});
+              const xs=[50,220,545],ys=[750,715,665,630];
+              for(const x of xs)page.drawLine({start:{x,y:ys[0]},end:{x,y:ys.at(-1)},thickness:0.5});
+              for(const y of ys)page.drawLine({start:{x:xs[0],y},end:{x:xs.at(-1),y},thickness:0.5});
+              const rows=continued?[['A2','Second page value'],['A3',''],['A4','42']]:[['Code','Description'],['A1','First line'],['','0']];
+              rows.forEach((row,i)=>row.forEach((text,j)=>{if(text)page.drawText(text,{x:xs[j]+5,y:ys[i]-15,size:10,font:!continued&&i===0?bold:regular});}));
+              if(!continued)page.drawText('Second line',{x:225,y:685,size:10,font:regular});
+              page.drawText('After table paragraph.',{x:50,y:590,size:12,font:regular});
+            };
+            makePage(false);makePage(true);return Array.from(await doc.save());
+        }''')
+        self.go('pdf-sang-word')
+        self.page.locator('#qFile').set_input_files({'name':'ruled-tables.pdf','mimeType':'application/pdf','buffer':bytes(data)})
+        self.page.locator('#qHow').select_option('text');self.page.locator('#qGo').click()
+        expect(self.page.locator('#qRes table')).to_have_count(2)
+        with zipfile.ZipFile(io.BytesIO(self.downloaded('#qDl'))) as z:
+            root=ET.fromstring(z.read('word/document.xml'))
+        ns={'w':'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+        tables=root.findall('.//w:tbl',ns);self.assertEqual(len(tables),2)
+        def text(node):return ''.join(node.itertext())
+        rows=[[text(c) for c in row.findall('w:tc',ns)] for row in tables[0].findall('w:tr',ns)]
+        self.assertEqual(rows,[['Code','Description'],['A1','First lineSecond line'],['','0']])
+        columns=[int(col.attrib['{'+ns['w']+'}w']) for col in tables[0].findall('w:tblGrid/w:gridCol',ns)]
+        self.assertGreater(columns[1],columns[0])
+        self.assertEqual(len(tables[0].findall('.//w:tblHeader',ns)),1)
+        self.assertEqual(len(tables[1].findall('.//w:tblHeader',ns)),0,'Continuation data must not become a header')
+        self.assertTrue(any(text(p)=='Report heading' and p.find('.//w:b',ns) is not None for p in root.findall('.//w:p',ns)))
+        self.assertIn('After table paragraph.',text(root))
+        for paragraph in root.findall('.//w:p',ns):
+            if text(paragraph)=='After table paragraph.':
+                self.assertIsNone(paragraph.find('w:pPr/w:pStyle',ns),'Smaller table fonts must not turn body prose into headings')
 
     def test_new_tools_data_integrity_and_stale_output(self):
         self.go('dem-van-ban');self.page.locator('#xInput').fill('  Xin   chào  \nXin chào\n');self.page.locator('#xDedup').check();self.page.locator('#xRun').click()

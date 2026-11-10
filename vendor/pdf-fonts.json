@@ -1,0 +1,12 @@
+{
+  "r": {
+    "source": "https://raw.githubusercontent.com/googlefonts/tinos/4106aab86ddefe26d58a69745e04ae9479d22993/fonts/ttf/Tinos-Regular.ttf",
+    "sha256": "60a0e8ef0c04dd5dd69ffe91025fa2ae5836cbd35600a82ba031977557e2cb61",
+    "bytes": 521588
+  },
+  "b": {
+    "source": "https://raw.githubusercontent.com/googlefonts/tinos/4106aab86ddefe26d58a69745e04ae9479d22993/fonts/ttf/Tinos-Bold.ttf",
+    "sha256": "393269dbab8899f938db19783eca5eac92eb431f7ae0ab45b8349ca895f1a06b",
+    "bytes": 597880
+  }
+}

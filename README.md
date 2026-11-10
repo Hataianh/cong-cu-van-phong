@@ -23,6 +23,7 @@ Mở trình duyệt trên cổng 8000. Không có backend, cơ sở dữ liệu 
 - Bản Pro có gói dùng trong ChatGPT có chạy mã/tạo file: quy chuẩn và script dịch Word/Excel gốc, kèm hướng dẫn. Bản public không cho tải gói này. Đây không phải App/GPT đã xuất bản trên ChatGPT.
 - Thư viện JS chính được đóng gói local, giữ phiên bản cũ để hạn chế thay đổi hành vi. Script vendor kiểm tra SHA-512 từ npm; manifest lưu nguồn và SHA-256 từng bundle.
 - Sửa ZIP ảnh ghi đè khi các ảnh trùng tên; escape tên ảnh khi hiển thị; xử lý link hash sai định dạng.
+- Sửa ký hiệu `→` thành ô vuông trong Word → PDF bằng font Tinos đầy đủ. PDF → Word nhận bảng có đường kẻ, giữ các ô riêng, độ rộng cột và phần chữ in đậm thay vì trộn chữ giữa các cột.
 
 ## Dùng với ChatGPT
 
@@ -45,6 +46,7 @@ Website **không tự gọi ChatGPT hoặc đọc lịch sử chat**. Gọi tự
 - Không có analytics hay máy chủ ứng dụng. Một số phông/CMap bổ sung của PDF.js vẫn tải từ `cdn.jsdelivr.net` khi cần; không cam kết mọi tài liệu chạy offline.
 - Dịch PDF tại chỗ dùng lớp phủ; chữ gốc có thể còn bên dưới. Muốn xóa dữ liệu nhạy cảm hãy dùng **Che thông tin**.
 - Word/Excel → PDF có thể lệch bố cục với tài liệu phức tạp. Cần giống hoàn toàn thì xuất PDF từ Office.
+- PDF → Word dựng lại bảng có lưới đường kẻ đầy đủ; bảng không viền, ô gộp phức tạp và bố cục nhiều cột chưa được đảm bảo. Có thể chọn cách AI đọc hình trang cho trường hợp này.
 - AI và các công cụ kế toán hỗ trợ soát xét; cần đối chiếu số liệu/điều khoản với bản gốc. Chưa kiểm chứng mọi mẫu hóa đơn và mọi định dạng PDF/Office.
 
 ## GitHub Pages
@@ -64,6 +66,6 @@ python3 -m venv .venv
 
 Test tự dùng Chromium hệ thống nếu có, tự mở HTTP server, dùng tài liệu tổng hợp và câu trả lời AI mô phỏng. Kiểm tra điều hướng 43 công cụ, chính xác 10 mục bị khóa, link trực tiếp/link cũ, chặn tải gói dịch ChatGPT, giới hạn chọn/kéo thả 3 file, các đầu ra Word/Excel/PDF/ảnh và ChatGPT cho công cụ dùng thử. Các test dịch/scan hóa đơn/gói trợ lý dùng một response HTML bản Pro chỉ trong bộ test; file public luôn giữ `__MOI=true`, không thêm tham số URL mở khóa. CI được cấu hình chạy cùng bộ test; kết quả CI cần xem sau khi push.
 
-`python3 tools/vendor.py` tái tạo bundle có kiểm tra integrity; không cần chạy mỗi lần mở ứng dụng. `index.html` giữ engine gốc; `assets/ai-bridge.js` là cầu nối AI, `workspace.js` chứa tìm kiếm/công cụ mới, `workspace.css` là lớp giao diện.
+`python3 tools/vendor.py` tái tạo bundle có kiểm tra integrity; không cần chạy mỗi lần mở ứng dụng. `python3 tools/update_pdf_fonts.py` tái tạo font Tinos nhúng từ commit upstream và checksum cố định. `index.html` giữ engine gốc; `assets/pdf-layout.js` phục hồi bảng từ đường kẻ PDF; `ai-bridge.js` là cầu nối AI, `workspace.js` chứa tìm kiếm/công cụ mới, `workspace.css` là lớp giao diện.
 
 Xem [đánh giá và ý tưởng phát triển](docs/DANH-GIA-VA-LO-TRINH.md), [giấy phép thành phần](THIRD_PARTY.md). [Tài liệu gốc](docs/TINH-NANG-GOC.md) giữ để đối chiếu; các mô tả chỉ-Claude/CDN trong tài liệu đó đã được cập nhật như trên.

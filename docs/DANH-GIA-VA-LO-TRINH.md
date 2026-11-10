@@ -2,13 +2,15 @@
 
 ## Những vấn đề đã xác nhận và xử lý
 
+Khóa nhóm Kế toán và 5 công cụ AI, cùng giới hạn 3 file mỗi lần chọn, là chủ ý của chủ sở hữu trong bản ZIP gốc. Bản public đã khôi phục đúng phạm vi này; đây không phải lỗi cần gỡ bỏ. Nút tải gói dịch ChatGPT cũng bị khóa ở bản dùng thử. Liên kết Zalo `xxxxxx` chỉ là chỗ chờ thông tin liên hệ thật, không dùng làm nút liên hệ công khai.
+
 | Vấn đề trong ZIP | Ảnh hưởng | Bản cập nhật |
 |---|---|---|
-| Khóa nhóm kế toán/AI bằng `__MOI=true`, link Zalo `xxxxxx` | Có engine nhưng không mở được | Bỏ chế độ giới hạn và link mẫu |
-| Cắt danh sách còn 3 file | Kết quả thiếu file đã chọn | Bỏ giới hạn; test gộp 4 file |
+| Bản cập nhật trước vô tình mở khóa quyền dùng thử | Truy cập được tính năng dành cho bản đầy đủ | Khôi phục đúng 10 mục bị khóa; kiểm thử cả link trực tiếp, link cũ và gói dịch ChatGPT |
+| Bản cập nhật trước bỏ giới hạn 3 file | Phạm vi dùng thử khác bản gốc | Khôi phục giới hạn cả chọn file/kéo thả; giữ thông báo nhận 3 file đầu |
 | AI phụ thuộc Claude `sample` | Ngoài Artifact không dùng được nhiều mục AI | Cầu nối chép/dán, kiểm tra JSON, tải ảnh trang, hủy tác vụ; giữ native Claude |
 | Bundle từ CDN bị chặn ở môi trường thử | Trang hiện nhưng Excel/Word/ZIP không chạy đủ | Bundle local, tải từ npm có kiểm tra integrity |
-| ZIP ảnh dùng tên gốc trực tiếp | Ảnh trùng tên ghi đè nhau | Tự thêm hậu tố; test ZIP 4 ảnh cùng tên |
+| ZIP ảnh dùng tên gốc trực tiếp | Ảnh trùng tên ghi đè nhau | Tự thêm hậu tố; test ZIP 3 ảnh cùng tên trong giới hạn dùng thử |
 | Tên ảnh ghép vào HTML trạng thái chưa escape | Tên file có thể được hiểu thành markup | Escape tên ảnh |
 | Hash URL decode không bắt lỗi | Link sai escape làm hỏng điều hướng | Bắt lỗi, về trang chủ |
 | 40 công cụ không có tìm kiếm | Khó tìm trên màn hình nhỏ | Tìm không dấu, yêu thích, gần đây, phím tắt |

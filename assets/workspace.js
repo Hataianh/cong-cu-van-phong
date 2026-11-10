@@ -127,14 +127,20 @@
   const guide=document.createElement('dialog');guide.className='ai-dialog';guide.id='aiGuide';guide.setAttribute('aria-labelledby','guideTitle');
   guide.innerHTML=`<div class="ai-dialog-body"><div class="dialog-heading"><span class="hero-label">CHATGPT + CLAUDE</span><button class="icon-btn" id="guideClose" aria-label="Đóng hướng dẫn">×</button></div>
     <h2 id="guideTitle">AI của bạn. Bộ công cụ của bạn.</h2><p class="muted">Dùng tài khoản AI bạn đang có. Bản web không yêu cầu API key và không tự truy cập cuộc trò chuyện.</p>
-    <div class="guide-grid"><article><h3>Dùng ngay trên web</h3><ol><li>Mở công cụ, chọn tài liệu và bấm xử lý.</li><li>Chép yêu cầu, mở ChatGPT hoặc Claude.</li><li>Với bản scan: tải ảnh trang rồi đính kèm vào chat.</li><li>Dán câu trả lời về hộp hướng dẫn, kiểm tra và tải kết quả.</li></ol><p>Hỗ trợ dịch, tóm tắt, soát văn bản, đọc hóa đơn, rút trích hợp đồng. Trong Claude Artifact có kết nối, luồng gọi Claude hiện có vẫn được giữ.</p></article>
+    <div class="guide-grid"><article><h3>Dùng ngay trên web</h3><ol><li>Mở công cụ được phép dùng thử, chọn tài liệu và bấm xử lý.</li><li>Chép yêu cầu, mở ChatGPT hoặc Claude.</li><li>Với bản scan: tải ảnh trang rồi đính kèm vào chat.</li><li>Dán câu trả lời về hộp hướng dẫn, kiểm tra và tải kết quả.</li></ol><p>Dán AI ra Word và đọc/chuyển đổi PDF vẫn dùng được. Dịch, tóm tắt, soát văn bản, rút trích hợp đồng và nhóm Kế toán giữ khóa ở bản dùng thử. Trong Claude Artifact có kết nối, luồng gọi Claude hiện có vẫn được giữ.</p></article>
     <article><h3>Làm việc trong ChatGPT</h3><p>Tải gói trợ lý chứa quy chuẩn và script dịch Word/Excel hiện có. Đính kèm ZIP và tài liệu vào ChatGPT có công cụ chạy mã/tạo file, rồi gửi yêu cầu mẫu. Khả năng chạy mã phụ thuộc tài khoản và chế độ chat.</p><button class="btn" id="gptKit">Tải gói dùng với ChatGPT</button><p>Hoặc dán câu trả lời của ChatGPT vào <a href="#ai-sang-word" id="guideWord">Dán AI ra Word</a> để tạo tài liệu ngay trên máy.</p><p>Đây là gói tài liệu và script; không phải ứng dụng đã đăng trên kho Apps hay GPT đã được xuất bản.</p></article></div>
     <p class="hint-dl">Không lưu nội dung file vào lịch sử dùng công cụ. Dữ liệu bạn tự đưa vào chat được xử lý theo dịch vụ AI bạn chọn.</p></div>`;
   document.body.append(guide);
+  if(window.__MOI_CFG.MOI){
+    byId('gptKit').textContent='Xem tính năng bản đầy đủ';
+    const note=document.createElement('p');note.textContent='Gói script dịch Word/Excel chỉ có trong bản đầy đủ, không tải ở bản dùng thử.';
+    byId('gptKit').before(note);
+  }
   const closeGuide=()=>{guide.close();if(location.hash==='#huong-dan-ai')location.hash='';};
   byId('guideClose').onclick=closeGuide;byId('guideWord').onclick=()=>guide.close();
   guide.addEventListener('cancel',event=>{event.preventDefault();closeGuide();});
   byId('gptKit').onclick=async()=>{
+    if(window.__MOI_CFG.MOI){guide.close();location.hash='song-ngu';return;}
     const button=byId('gptKit');button.disabled=true;
     try{
       const zip=new JSZip(),skill=JSON.parse(byId('snSkill').textContent);

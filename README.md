@@ -2,6 +2,8 @@
 
 **43 công cụ PDF, Word, Excel, kế toán, ảnh và văn bản — chạy trên trình duyệt.** Dùng cùng ChatGPT hoặc Claude, không cần nhập API key vào website.
 
+**Bản public là bản dùng thử:** giữ nguyên 10 công cụ bị khóa và giới hạn 3 file mỗi lần chọn của bản ZIP gốc. Giao diện mới và hỗ trợ ChatGPT không mở khóa các tính năng bản đầy đủ.
+
 ## Chạy thử
 
 ```bash
@@ -14,18 +16,18 @@ Mở trình duyệt trên cổng 8000. Không có backend, cơ sở dữ liệu 
 
 ## Có gì mới
 
-- Giữ 40 công cụ gốc và các link cũ; mở nhóm kế toán/AI, bỏ khóa Zalo mẫu và giới hạn 3 file.
+- Giữ 40 công cụ gốc, các link cũ và phạm vi dùng thử: khóa nhóm Kế toán cùng 5 công cụ dịch/soát/tóm tắt; tối đa 3 file mỗi lần chọn hoặc kéo thả, có thông báo khi chỉ nhận 3 file đầu.
 - Giao diện sáng/tối mới, tìm kiếm tiếng Việt không dấu, lọc nhóm, yêu thích và công cụ gần đây. Nhấn `/` để tìm; `Ctrl/Cmd+Enter` chạy công cụ.
 - Thêm **Đếm & làm sạch văn bản**, **Kiểm tra & định dạng JSON**, **Chia nội dung gửi AI**.
 - ChatGPT/Claude qua hộp chép yêu cầu → dán kết quả, có tải ảnh trang cho bản scan. Giữ kết nối Claude Artifact nếu host cung cấp capability `sample`.
-- Tải gói dùng trong ChatGPT có chạy mã/tạo file: quy chuẩn và script dịch Word/Excel gốc, kèm hướng dẫn. Đây không phải App/GPT đã xuất bản trên ChatGPT.
+- Bản đầy đủ có gói dùng trong ChatGPT có chạy mã/tạo file: quy chuẩn và script dịch Word/Excel gốc, kèm hướng dẫn. Bản public không cho tải gói này. Đây không phải App/GPT đã xuất bản trên ChatGPT.
 - Thư viện JS chính được đóng gói local, giữ phiên bản cũ để hạn chế thay đổi hành vi. Script vendor kiểm tra SHA-512 từ npm; manifest lưu nguồn và SHA-256 từng bundle.
 - Sửa ZIP ảnh ghi đè khi các ảnh trùng tên; escape tên ảnh khi hiển thị; xử lý link hash sai định dạng.
 
 ## Dùng với ChatGPT
 
-1. Bấm **Dùng với ChatGPT** trên đầu trang để xem hướng dẫn hoặc tải gói trợ lý.
-2. Chọn công cụ AI, chọn tài liệu và bấm xử lý.
+1. Bấm **Dùng với ChatGPT** trên đầu trang để xem hướng dẫn. Gói trợ lý dịch thuộc bản đầy đủ.
+2. Chọn công cụ được phép dùng thử (ví dụ **Dán AI ra Word**, **PDF sang Word/Excel**), chọn tài liệu và bấm xử lý.
 3. Chép yêu cầu sang ChatGPT. Với bản scan, tải ảnh trang trong hộp rồi đính kèm ảnh cùng yêu cầu.
 4. Dán toàn bộ kết quả về website. JSON trong khối mã được hỗ trợ; trang báo lỗi định dạng để sửa trước khi tiếp tục.
 5. Duyệt kết quả rồi tải file. Tài liệu nhiều phần cần lặp lại cho từng phần.
@@ -34,6 +36,9 @@ Website **không tự gọi ChatGPT hoặc đọc lịch sử chat**. Gọi tự
 
 ## Dữ liệu và giới hạn
 
+- Khóa đúng 5 công cụ: **Dịch Word/Excel giữ bố cục**, **Dịch PDF giữ bố cục**, **Soát lỗi văn bản**, **Rút trích hợp đồng**, **Tóm tắt PDF**; cùng toàn bộ 5 công cụ nhóm **Kế toán**. Mở link trực tiếp, link cũ hay dùng phím tắt vẫn hiện màn hình bản đầy đủ.
+- Mỗi lần chọn/kéo thả nhận tối đa 3 file đầu, như bản gốc. Nếu vượt giới hạn, trang thông báo rõ. Bản đầy đủ giữ xử lý nhiều file.
+- Nút tải gói dịch ChatGPT ở hướng dẫn tuân theo cùng quyền của công cụ Dịch Word/Excel. Liên kết Zalo mẫu không được dùng; chỉ thêm liên hệ khi có địa chỉ thật từ chủ sở hữu.
 - File/kết quả nằm trong bộ nhớ trang. Làm mới hoặc đóng trang sẽ mất phiên; tải kết quả trước khi đóng.
 - Local storage chỉ giữ theme, ID công cụ yêu thích/gần đây, lựa chọn dịch vụ AI và trạng thái thông báo. Không lưu nội dung tài liệu.
 - Luồng chép/dán không tự gửi tài liệu ra mạng. Trong Claude Artifact hỗ trợ kết nối, thao tác chạy AI gửi nội dung theo cơ chế cấp quyền của host.
@@ -57,7 +62,7 @@ python3 -m venv .venv
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
-Test tự dùng Chromium hệ thống nếu có, tự mở HTTP server, dùng tài liệu tổng hợp và câu trả lời AI mô phỏng. Kiểm tra điều hướng 43 công cụ, Word/Excel/PDF/ảnh đầu ra, dịch giữ bố cục, scan hóa đơn, JSON lỗi, dừng tác vụ, Claude capability, gói ChatGPT, tìm kiếm/yêu thích và màn hình nhỏ. CI được cấu hình chạy cùng bộ test; kết quả CI cần xem sau khi push.
+Test tự dùng Chromium hệ thống nếu có, tự mở HTTP server, dùng tài liệu tổng hợp và câu trả lời AI mô phỏng. Kiểm tra điều hướng 43 công cụ, chính xác 10 mục bị khóa, link trực tiếp/link cũ, chặn tải gói dịch ChatGPT, giới hạn chọn/kéo thả 3 file, các đầu ra Word/Excel/PDF/ảnh và ChatGPT cho công cụ dùng thử. Các test dịch/scan hóa đơn/gói trợ lý dùng một response HTML bản đầy đủ chỉ trong bộ test; file public luôn giữ `__MOI=true`, không thêm tham số URL mở khóa. CI được cấu hình chạy cùng bộ test; kết quả CI cần xem sau khi push.
 
 `python3 tools/vendor.py` tái tạo bundle có kiểm tra integrity; không cần chạy mỗi lần mở ứng dụng. `index.html` giữ engine gốc; `assets/ai-bridge.js` là cầu nối AI, `workspace.js` chứa tìm kiếm/công cụ mới, `workspace.css` là lớp giao diện.
 

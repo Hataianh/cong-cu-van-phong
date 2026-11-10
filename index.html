@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
+<script>window.__MOI=true;/* Bản public dùng thử; giữ nguyên khóa và giới hạn của bản gốc. */</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>Hộp công cụ Văn phòng</title>
@@ -529,6 +530,7 @@ main .drop:not(.loaded):not(.small):hover b{filter:brightness(1.07)}
     <h1 id="homeTitle">Việc văn phòng,<br><em>nhẹ nhàng hơn.</em></h1>
     <p class="home-sub">Một nơi cho PDF, Word, Excel và những việc lặp lại mỗi ngày.<br>File được xử lý trên trình duyệt. Bạn chủ động chọn nội dung đưa sang AI.</p>
     <div class="hero-facts"><span>✓ Không cần tài khoản</span><span>✓ Không cần API key</span><span>✓ ChatGPT &amp; Claude</span></div>
+    <p class="trial-note" id="trialInfo" hidden>Bản dùng thử · Tối đa 3 file mỗi lần chọn · Các mục có biểu tượng khóa dành cho bản đầy đủ.</p>
     <div class="search-box"><svg class="ic" aria-hidden="true"><use href="#t-grid"/></svg><label class="vh" for="toolSearch">Tìm công cụ</label><input id="toolSearch" type="search" placeholder="Bạn muốn làm gì? Thử: gộp PDF, hóa đơn, dịch…" autocomplete="off"><kbd>/</kbd></div>
     <div class="quick-links"><a href="#gop-pdf">Gộp PDF ↗</a><a href="#ai-sang-word">AI → Word ↗</a><a href="#song-ngu">Dịch giữ bố cục ↗</a><a href="#hoa-don-xml">Hóa đơn XML ↗</a></div>
     <div class="catalog-head"><h2>Góc làm việc của bạn</h2><p id="toolCount" role="status" aria-live="polite"></p></div>
@@ -2314,6 +2316,22 @@ const baseName=n=>(""+n).replace(/\.[^.]+$/,"").replace(/[\\/:*?"<>|]+/g,"-").sl
    Các công cụ PDF dùng chung khung #tab-pdf, các công cụ đọc PDF dùng chung #tab-pdfai: chỉ hiện phần của công cụ đang mở. */
 const TABS=["word","clean","merge","check","audit","invoice","bilingual","pdf","pdfai","topdf","img","biencn","soatthue","doichieu112","extras"];
 function showTab(key){TABS.forEach(t=>$("#tab-"+t).hidden=(t!==key));}
+/* Giữ nguyên phạm vi bản dùng thử trong ZIP gốc. */
+const MOI = !!window.__MOI;
+const PRO_IDS = new Set(["song-ngu","dich-pdf","soat-van-ban","rut-hop-dong","tom-tat-pdf"]);
+const isPro = t => !!t && (t.g==="kt" || PRO_IDS.has(t.id));
+const FREE_FILES = 3;
+const ZALO = {
+  link: "", /* Chỉ thêm liên kết liên hệ thật khi chủ sở hữu cung cấp. */
+  title: "Tính năng này có trong BẢN ĐẦY ĐỦ",
+  lines: [
+    "Công cụ này không mở trong bản dùng thử công khai.",
+    "Liên hệ người cung cấp để nhận bản đầy đủ. Giao diện mới và hỗ trợ ChatGPT không thay đổi quyền dùng thử."
+  ],
+  btn: "Nhận bản đầy đủ"
+};
+window.__MOI_CFG = {MOI, FREE_FILES, ZALO};
+$("#trialInfo").hidden=!MOI;
 const GROUPS=[
   {id:"org",n:"Sắp xếp PDF"},{id:"edit",n:"Chỉnh sửa PDF"},{id:"conv",n:"Đọc và chuyển đổi"},
   {id:"sec",n:"Bảo mật PDF"},{id:"doc",n:"Văn bản và dịch"},{id:"xls",n:"Công cụ Excel"},{id:"kt",n:"Kế toán"},{id:"img",n:"Công cụ ảnh"}];
@@ -2366,7 +2384,7 @@ const TOOLS=[
 const LEGACY={word:"ai-sang-word","lam-sach":"lam-sach-excel","gop-file":"gop-excel","hoa-don":"hoa-don-xml",pdf:"gop-pdf","doc-pdf":"pdf-sang-excel","pdf-tu-kiem":"gop-pdf"};
 const ico=id=>'<svg class="ic" aria-hidden="true"><use href="#'+id+'"/></svg>';
 (function(){
-  const card=t=>{const lock=false;
+  const card=t=>{const lock=MOI&&isPro(t);
     return '<a class="tool'+(lock?' pro-locked':'')+'" href="#'+t.id+'" style="--c:var(--c-'+t.g+')"><span class="tile">'+ico(t.ic)+'</span><b>'+esc(t.n)+'</b><span class="d">'+esc(t.d)+"</span>"+(lock?'<span class="tag tag-pro">🔒 Bản đầy đủ</span>':(t.ai?'<span class="tag">ChatGPT / Claude</span>':""))+"</a>";};
   const grid=(groups,tools)=>groups.map(g=>{const ts=tools.filter(t=>t.g===g.id);if(!ts.length)return"";
     return '<section class="tgroup" data-g="'+g.id+'" style="--c:var(--c-'+g.id+')" aria-labelledby="g-'+g.id+'"><h2 id="g-'+g.id+'"><i aria-hidden="true"></i>'+esc(g.n)+" <span>"+ts.length+' công cụ</span></h2><div class="tgrid">'+ts.map(card).join("")+"</div></section>";}).join("");
@@ -2380,6 +2398,13 @@ try{NOTE.dismissed=localStorage.getItem("hcvp-notice")==="0";}catch(e){}
 function updNotice(on){$("#notice").hidden=!(on&&NOTE.inClaude&&!NOTE.dismissed);}
 $("#noticeX").onclick=()=>{NOTE.dismissed=true;updNotice(false);try{localStorage.setItem("hcvp-notice","0");}catch(e){}};
 let curTool=null;
+function fillProLock(t){
+  $("#proLock").innerHTML='<div class="prolock" style="--c:var(--c-'+t.g+')"><span class="prolock-ic">'+ico("t-lock")+'</span>'+
+    '<h2>'+esc(ZALO.title)+'</h2>'+
+    '<p class="prolock-sub">Công cụ <b>'+esc(t.n)+'</b> — '+esc(t.d)+'</p>'+
+    ZALO.lines.map(l=>'<p>'+esc(l)+'</p>').join("")+
+    (ZALO.link?'<a class="btn btn-join" href="'+esc(ZALO.link)+'" target="_blank" rel="noopener">'+esc(ZALO.btn)+' →</a>':'')+'</div>';
+}
 function route(){
   let h;try{h=decodeURIComponent((location.hash||"").replace(/^#\/?/,""));}catch(e){h="";}
   if(h==="huong-dan-ai")h="";
@@ -2396,6 +2421,13 @@ function route(){
   document.body.dataset.cat=t.g;
   $("#toolTile").innerHTML=ico(t.ic);$("#toolTitle").textContent=t.n;$("#toolDesc").textContent=t.d;
   document.title=t.n+" – Hộp công cụ Văn phòng";
+  if(MOI&&isPro(t)){
+    showTab("__none__");fillProLock(t);$("#proLock").hidden=false;
+    const relp=TOOLS.filter(x=>x.id!==t.id&&!isPro(x)).slice(0,6);
+    $("#relList").innerHTML=relp.map(x=>'<li><a href="#'+x.id+'" style="--c:var(--c-'+x.g+')"><span class="tile">'+ico(x.ic)+"</span>"+esc(x.n)+"</a></li>").join("");
+    if(curTool!==t.id){window.scrollTo(0,0);$("#toolTitle").focus({preventScroll:true});}
+    curTool=t.id;return;
+  }
   if($("#proLock"))$("#proLock").hidden=true;
   showTab(t.tab);
   if(t.tab==="pdf"&&window.HCVP&&HCVP.pdfTool)HCVP.pdfTool(t.id);
@@ -2494,7 +2526,13 @@ const canon=h=>{const n=norm(h);return SYN[n]||n;};
 /* Vùng thả file: <label> bọc input; kéo thả + chọn lại cùng file vẫn chạy */
 function wireDrop(dropSel,inpSel,onFiles){
   const drop=$(dropSel),inp=$(inpSel);
-  const cap=fl=>fl;
+  const cap=fl=>{
+    if(MOI&&fl.length>FREE_FILES){
+      toast("Bản dùng thử xử lý tối đa "+FREE_FILES+" file mỗi lần chọn. Chỉ nhận "+FREE_FILES+" file đầu tiên; xử lý hàng loạt có trong bản đầy đủ.");
+      return fl.slice(0,FREE_FILES);
+    }
+    return fl;
+  };
   drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over");});
   drop.addEventListener("dragleave",()=>drop.classList.remove("over"));
   drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");if(e.dataTransfer.files.length)onFiles(cap(Array.from(e.dataTransfer.files)));});

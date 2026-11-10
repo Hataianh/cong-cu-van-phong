@@ -13,6 +13,10 @@ import zipfile
 from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[1]
+LOCKED_TOOLS = {
+    'song-ngu','dich-pdf','soat-van-ban','rut-hop-dong','tom-tat-pdf',
+    'hoa-don-xml','hoa-don-scan','soat-khau-tru-thue','doi-chieu-112','bien-ban-cong-no',
+}
 
 
 class QuietHandler(SimpleHTTPRequestHandler):
@@ -64,6 +68,19 @@ class BrowserTests(unittest.TestCase):
         self.page.evaluate('(id)=>location.hash=id',tool)
         expect(self.page.locator('#toolHead')).to_be_visible()
 
+    def load_full_version(self):
+        # Exercise the private/full build in the test response only. The
+        # production document remains the trial; no URL parameter unlocks it.
+        original=(ROOT/'index.html').read_text()
+        self.assertEqual(original.count('window.__MOI=true;'),1)
+        full=original.replace('window.__MOI=true;','window.__MOI=false;',1)
+        def serve_full(route):
+            route.fulfill(status=200,content_type='text/html; charset=utf-8',body=full)
+        self.page.route(self.base,serve_full)
+        self.page.reload(wait_until='networkidle')
+        self.page.unroute(self.base,serve_full)
+        expect(self.page.locator('#trialInfo')).to_be_hidden()
+
     def downloaded(self, selector):
         with self.page.expect_download() as event:
             self.page.locator(selector).click()
@@ -77,10 +94,16 @@ class BrowserTests(unittest.TestCase):
     def test_all_routes_and_legacy_links(self):
         ids=self.page.locator('#homeGroups a.tool').evaluate_all('(links)=>links.map(a=>a.hash.slice(1))')
         self.assertEqual(len(ids),43)
+        tagged=set(self.page.locator('#homeGroups a.pro-locked').evaluate_all('(links)=>links.map(a=>a.hash.slice(1))'))
+        self.assertEqual(tagged,LOCKED_TOOLS)
         for tool in ids:
             self.go(tool)
             expect(self.page.locator('main > .panel:visible')).to_have_count(1)
-            expect(self.page.locator('#proLock')).to_be_hidden()
+            if tool in LOCKED_TOOLS:
+                expect(self.page.locator('#proLock')).to_be_visible()
+                expect(self.page.locator('main > .panel:not(#proLock):visible')).to_have_count(0)
+            else:
+                expect(self.page.locator('#proLock')).to_be_hidden()
         self.go('word');expect(self.page.locator('#tab-word')).to_be_visible()
         self.page.evaluate("location.hash='%E0%A4%A'")
         expect(self.page.locator('#home')).to_be_visible()
@@ -127,15 +150,33 @@ class BrowserTests(unittest.TestCase):
         self.assertIn('0901234567',data['rows'][1])
         self.assertIn(500000,data['rows'][1])
 
-    def test_merge_more_than_three_files(self):
+    def test_trial_file_picker_caps_merge_at_three(self):
         self.go('gop-excel')
+        files=[{'name':f'{i}.csv','mimeType':'text/csv','buffer':f'Ma,So luong\nA{i},{i}\n'.encode()} for i in range(1,5)]
+        self.page.locator('#mFile').set_input_files(files)
+        expect(self.page.locator('#toast')).to_contain_text('Chỉ nhận 3 file đầu tiên')
+        self.page.locator('#mGo').click()
+        data=self.read_xlsx(self.downloaded('#mDl'))
+        self.assertEqual(len(data['rows']),4)
+        self.assertEqual([row[0] for row in data['rows'][1:]],['A1','A2','A3'])
+
+    def test_full_version_accepts_four_files(self):
+        self.load_full_version();self.go('gop-excel')
         files=[{'name':f'{i}.csv','mimeType':'text/csv','buffer':f'Ma,So luong\nA{i},{i}\n'.encode()} for i in range(1,5)]
         self.page.locator('#mFile').set_input_files(files)
         self.page.locator('#mGo').click()
         data=self.read_xlsx(self.downloaded('#mDl'))
         self.assertEqual(len(data['rows']),5)
 
+    def test_trial_drag_and_drop_caps_merge_at_three(self):
+        self.go('gop-excel')
+        self.page.locator('#mDrop').evaluate('''drop=>{const transfer=new DataTransfer();for(let i=1;i<=4;i++)transfer.items.add(new File([`Ma,So luong\nA${i},${i}\n`],`${i}.csv`,{type:'text/csv'}));drop.dispatchEvent(new DragEvent('drop',{dataTransfer:transfer,bubbles:true,cancelable:true}));}''')
+        expect(self.page.locator('#toast')).to_contain_text('Chỉ nhận 3 file đầu tiên')
+        self.page.locator('#mGo').click()
+        self.assertEqual(len(self.read_xlsx(self.downloaded('#mDl'))['rows']),4)
+
     def test_bilingual_roundtrip_manual_chatgpt(self):
+        self.load_full_version()
         self.go('song-ngu');self.page.locator('#bFile').set_input_files(word_fixture())
         expect(self.page.locator('#bModes')).to_be_visible()
         self.page.locator('#bGo').click()
@@ -156,6 +197,7 @@ class BrowserTests(unittest.TestCase):
             self.assertIn('w:b',xml)
 
     def test_summary_from_word_and_export(self):
+        self.load_full_version()
         self.go('tom-tat-pdf');self.page.locator('#qFile').set_input_files(word_fixture())
         expect(self.page.locator('#qGo')).to_be_enabled();self.page.locator('#qGo').click()
         expect(self.page.locator('#aiPrompt')).to_be_visible()
@@ -182,6 +224,7 @@ class BrowserTests(unittest.TestCase):
         expect(self.page.locator('dialog[open]')).to_have_count(0)
 
     def test_scan_invoice_to_excel_formulas(self):
+        self.load_full_version()
         image=self.page.evaluate("()=>{const c=document.createElement('canvas');c.width=200;c.height=200;c.getContext('2d').fillText('Invoice',20,20);return c.toDataURL('image/png').split(',')[1];}")
         self.go('hoa-don-scan')
         self.page.locator('#qFile').set_input_files({'name':'invoice.png','mimeType':'image/png','buffer':base64.b64decode(image)})
@@ -202,9 +245,9 @@ class BrowserTests(unittest.TestCase):
     def test_image_zip_preserves_duplicate_names(self):
         image=self.page.evaluate("()=>{const c=document.createElement('canvas');c.width=10;c.height=10;c.getContext('2d').fillRect(0,0,10,10);return c.toDataURL('image/png').split(',')[1];}")
         self.go('nen-anh')
-        self.page.locator('#gFile').set_input_files([{'name':'same.png','mimeType':'image/png','buffer':base64.b64decode(image)} for _ in range(4)])
+        self.page.locator('#gFile').set_input_files([{'name':'same.png','mimeType':'image/png','buffer':base64.b64decode(image)} for _ in range(3)])
         with zipfile.ZipFile(io.BytesIO(self.downloaded('#gGo'))) as z:
-            self.assertEqual(len(z.namelist()),4)
+            self.assertEqual(len(z.namelist()),3)
 
     def test_native_claude_preserved(self):
         self.page.add_init_script('''window.claude={use:async name=>name==='sample'?Object.assign(async()=>({text:'native works'}),{limits:async()=>({})}):null};''')
@@ -242,12 +285,46 @@ class BrowserTests(unittest.TestCase):
         self.assertEqual(''.join(parts),text);self.assertTrue(all(len(p)<=100 for p in parts))
 
     def test_chatgpt_kit_contains_original_scripts(self):
+        self.load_full_version()
         self.page.locator('a[href="#huong-dan-ai"]').first.click()
         data=self.downloaded('#gptKit')
         with zipfile.ZipFile(io.BytesIO(data)) as z:
             self.assertIn('BAT-DAU-CHATGPT.md',z.namelist())
             self.assertIn('vp-dich-song-ngu/scripts/song_ngu.py',z.namelist())
             compile(z.read('vp-dich-song-ngu/scripts/song_ngu.py'),'song_ngu.py','exec')
+
+    def test_trial_chatgpt_guide_cannot_download_translation_kit(self):
+        downloads=[]
+        self.page.on('download',lambda item:downloads.append(item.suggested_filename))
+        self.page.locator('a[href="#huong-dan-ai"]').first.click()
+        expect(self.page.locator('#gptKit')).to_have_text('Xem tính năng bản đầy đủ')
+        self.page.locator('#gptKit').click()
+        expect(self.page.locator('#proLock')).to_be_visible()
+        expect(self.page.locator('#tab-bilingual')).to_be_hidden()
+        expect(self.page.locator('dialog[open]')).to_have_count(0)
+        self.assertEqual(downloads,[])
+
+    def test_locked_deep_links_after_reload_and_legacy_link(self):
+        for tool in sorted(LOCKED_TOOLS | {'hoa-don'}):
+            self.page.goto(self.base+'#'+tool,wait_until='networkidle')
+            self.page.reload(wait_until='networkidle')
+            expect(self.page.locator('#proLock')).to_be_visible()
+            expect(self.page.locator('main > .panel:not(#proLock):visible')).to_have_count(0)
+            expect(self.page.locator('#proLock a[href*="xxxxxx"]')).to_have_count(0)
+            self.page.keyboard.press('Control+Enter')
+            expect(self.page.locator('dialog[open]')).to_have_count(0)
+
+    def test_trial_chatgpt_pdf_to_word_still_works(self):
+        image=self.page.evaluate("()=>{const c=document.createElement('canvas');c.width=100;c.height=100;c.getContext('2d').fillText('Hello',20,20);return c.toDataURL('image/png').split(',')[1];}")
+        self.go('pdf-sang-word')
+        self.page.locator('#qFile').set_input_files({'name':'scan.png','mimeType':'image/png','buffer':base64.b64decode(image)})
+        self.page.locator('#qGo').click()
+        expect(self.page.locator('#aiImages')).to_be_visible()
+        self.page.locator('#aiAnswer').fill('## Văn bản thử\nĐọc bản scan bằng ChatGPT.')
+        self.page.locator('#aiAccept').click()
+        expect(self.page.locator('#qRes')).to_contain_text('Đọc bản scan bằng ChatGPT.')
+        with zipfile.ZipFile(io.BytesIO(self.downloaded('#qDl'))) as z:
+            self.assertIn('Đọc bản scan bằng ChatGPT.',z.read('word/document.xml').decode())
 
     def test_mobile_layout_and_keyboard(self):
         for width in [375,768,1440]:

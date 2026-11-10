@@ -530,7 +530,6 @@ main .drop:not(.loaded):not(.small):hover b{filter:brightness(1.07)}
     <h1 id="homeTitle">Việc văn phòng,<br><em>nhẹ nhàng hơn.</em></h1>
     <p class="home-sub">Một nơi cho PDF, Word, Excel và những việc lặp lại mỗi ngày.<br>File được xử lý trên trình duyệt. Bạn chủ động chọn nội dung đưa sang AI.</p>
     <div class="hero-facts"><span>✓ Không cần tài khoản</span><span>✓ Không cần API key</span><span>✓ ChatGPT &amp; Claude</span></div>
-    <p class="trial-note" id="trialInfo" hidden>Bản dùng thử · Tối đa 3 file mỗi lần chọn · Các mục có biểu tượng khóa dành cho bản Pro.</p>
     <div class="search-box"><svg class="ic" aria-hidden="true"><use href="#t-grid"/></svg><label class="vh" for="toolSearch">Tìm công cụ</label><input id="toolSearch" type="search" placeholder="Bạn muốn làm gì? Thử: gộp PDF, hóa đơn, dịch…" autocomplete="off"><kbd>/</kbd></div>
     <div class="quick-links"><a href="#gop-pdf">Gộp PDF ↗</a><a href="#ai-sang-word">AI → Word ↗</a><a href="#song-ngu">Dịch giữ bố cục ↗</a><a href="#hoa-don-xml">Hóa đơn XML ↗</a></div>
     <div class="catalog-head"><h2>Góc làm việc của bạn</h2><p id="toolCount" role="status" aria-live="polite"></p></div>
@@ -2331,7 +2330,6 @@ const ZALO = {
   btn: "Nhận bản Pro"
 };
 window.__MOI_CFG = {MOI, FREE_FILES, ZALO};
-$("#trialInfo").hidden=!MOI;
 const GROUPS=[
   {id:"org",n:"Sắp xếp PDF"},{id:"edit",n:"Chỉnh sửa PDF"},{id:"conv",n:"Đọc và chuyển đổi"},
   {id:"sec",n:"Bảo mật PDF"},{id:"doc",n:"Văn bản và dịch"},{id:"xls",n:"Công cụ Excel"},{id:"kt",n:"Kế toán"},{id:"img",n:"Công cụ ảnh"}];

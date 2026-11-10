@@ -9,9 +9,9 @@
 .home-sub{max-width:68ch;font-size:15px;margin-top:22px}
 .hero-facts{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin:24px 0;color:var(--muted);font-size:12px}
 .hero-facts span:first-child{color:var(--accent)}
-.trial-note{max-width:650px;margin:0 auto;color:var(--muted);font-size:12px;text-align:center;line-height:1.7}
 .search-box{display:flex;align-items:center;gap:12px;max-width:650px;margin:30px auto 0;padding:10px 16px;background:var(--surface);border:1px solid var(--line);box-shadow:0 8px 28px #172f3010;border-radius:15px;color:var(--muted)}
 .search-box input{width:100%;min-width:0;border:0;background:transparent;color:var(--fg);font:inherit;font-size:14px;padding:8px 0;outline-offset:4px}
+.search-box input:focus{outline:none}
 .quick-links{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:16px;font-size:12px}
 .quick-links a{text-decoration:none;color:var(--muted)}
 .quick-links a:hover{color:var(--accent)}

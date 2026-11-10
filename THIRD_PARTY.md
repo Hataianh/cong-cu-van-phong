@@ -15,4 +15,4 @@ Exact versions, npm source URLs, verified package SHA-512 integrity and bundle S
 | diff | 5.2.0 | BSD-3-Clause |
 | docx-preview | 0.3.3 | Apache-2.0 |
 
-The supplied HTML embeds Be Vietnam Pro and Tinos fonts under SIL Open Font License 1.1, as indicated by the original documentation. PDF.js may fetch auxiliary assets from its pinned CDN when needed.
+The supplied HTML embeds Be Vietnam Pro and Tinos fonts under SIL Open Font License 1.1. Upstream license notices are retained in `vendor/bevietnampro-OFL.txt` and `vendor/tinos-OFL.txt`; the embedded Tinos metadata identifies the 2026 Tinos Project Authors. PDF.js may fetch auxiliary assets from its pinned CDN when needed.

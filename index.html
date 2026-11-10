@@ -530,7 +530,7 @@ main .drop:not(.loaded):not(.small):hover b{filter:brightness(1.07)}
     <h1 id="homeTitle">Việc văn phòng,<br><em>nhẹ nhàng hơn.</em></h1>
     <p class="home-sub">Một nơi cho PDF, Word, Excel và những việc lặp lại mỗi ngày.<br>File được xử lý trên trình duyệt. Bạn chủ động chọn nội dung đưa sang AI.</p>
     <div class="hero-facts"><span>✓ Không cần tài khoản</span><span>✓ Không cần API key</span><span>✓ ChatGPT &amp; Claude</span></div>
-    <p class="trial-note" id="trialInfo" hidden>Bản dùng thử · Tối đa 3 file mỗi lần chọn · Các mục có biểu tượng khóa dành cho bản đầy đủ.</p>
+    <p class="trial-note" id="trialInfo" hidden>Bản dùng thử · Tối đa 3 file mỗi lần chọn · Các mục có biểu tượng khóa dành cho bản Pro.</p>
     <div class="search-box"><svg class="ic" aria-hidden="true"><use href="#t-grid"/></svg><label class="vh" for="toolSearch">Tìm công cụ</label><input id="toolSearch" type="search" placeholder="Bạn muốn làm gì? Thử: gộp PDF, hóa đơn, dịch…" autocomplete="off"><kbd>/</kbd></div>
     <div class="quick-links"><a href="#gop-pdf">Gộp PDF ↗</a><a href="#ai-sang-word">AI → Word ↗</a><a href="#song-ngu">Dịch giữ bố cục ↗</a><a href="#hoa-don-xml">Hóa đơn XML ↗</a></div>
     <div class="catalog-head"><h2>Góc làm việc của bạn</h2><p id="toolCount" role="status" aria-live="polite"></p></div>
@@ -2323,12 +2323,12 @@ const isPro = t => !!t && (t.g==="kt" || PRO_IDS.has(t.id));
 const FREE_FILES = 3;
 const ZALO = {
   link: "", /* Chỉ thêm liên kết liên hệ thật khi chủ sở hữu cung cấp. */
-  title: "Tính năng này có trong BẢN ĐẦY ĐỦ",
+  title: "Tính năng dành cho Pro",
   lines: [
     "Công cụ này không mở trong bản dùng thử công khai.",
-    "Liên hệ người cung cấp để nhận bản đầy đủ. Giao diện mới và hỗ trợ ChatGPT không thay đổi quyền dùng thử."
+    "Liên hệ người cung cấp để nhận bản Pro. Giao diện mới và hỗ trợ ChatGPT không thay đổi quyền dùng thử."
   ],
-  btn: "Nhận bản đầy đủ"
+  btn: "Nhận bản Pro"
 };
 window.__MOI_CFG = {MOI, FREE_FILES, ZALO};
 $("#trialInfo").hidden=!MOI;
@@ -2385,7 +2385,7 @@ const LEGACY={word:"ai-sang-word","lam-sach":"lam-sach-excel","gop-file":"gop-ex
 const ico=id=>'<svg class="ic" aria-hidden="true"><use href="#'+id+'"/></svg>';
 (function(){
   const card=t=>{const lock=MOI&&isPro(t);
-    return '<a class="tool'+(lock?' pro-locked':'')+'" href="#'+t.id+'" style="--c:var(--c-'+t.g+')"><span class="tile">'+ico(t.ic)+'</span><b>'+esc(t.n)+'</b><span class="d">'+esc(t.d)+"</span>"+(lock?'<span class="tag tag-pro">🔒 Bản đầy đủ</span>':(t.ai?'<span class="tag">ChatGPT / Claude</span>':""))+"</a>";};
+    return '<a class="tool'+(lock?' pro-locked':'')+'" href="#'+t.id+'" style="--c:var(--c-'+t.g+')"><span class="tile">'+ico(t.ic)+'</span><b>'+esc(t.n)+'</b><span class="d">'+esc(t.d)+"</span>"+(lock?'<span class="tag tag-pro">🔒 Pro</span>':(t.ai?'<span class="tag">ChatGPT / Claude</span>':""))+"</a>";};
   const grid=(groups,tools)=>groups.map(g=>{const ts=tools.filter(t=>t.g===g.id);if(!ts.length)return"";
     return '<section class="tgroup" data-g="'+g.id+'" style="--c:var(--c-'+g.id+')" aria-labelledby="g-'+g.id+'"><h2 id="g-'+g.id+'"><i aria-hidden="true"></i>'+esc(g.n)+" <span>"+ts.length+' công cụ</span></h2><div class="tgrid">'+ts.map(card).join("")+"</div></section>";}).join("");
   $("#homeGroups").innerHTML=grid(GROUPS,TOOLS);
@@ -2528,7 +2528,7 @@ function wireDrop(dropSel,inpSel,onFiles){
   const drop=$(dropSel),inp=$(inpSel);
   const cap=fl=>{
     if(MOI&&fl.length>FREE_FILES){
-      toast("Bản dùng thử xử lý tối đa "+FREE_FILES+" file mỗi lần chọn. Chỉ nhận "+FREE_FILES+" file đầu tiên; xử lý hàng loạt có trong bản đầy đủ.");
+      toast("Bản dùng thử xử lý tối đa "+FREE_FILES+" file mỗi lần chọn. Chỉ nhận "+FREE_FILES+" file đầu tiên; xử lý hàng loạt có trong bản Pro.");
       return fl.slice(0,FREE_FILES);
     }
     return fl;

@@ -297,7 +297,7 @@ class BrowserTests(unittest.TestCase):
         downloads=[]
         self.page.on('download',lambda item:downloads.append(item.suggested_filename))
         self.page.locator('a[href="#huong-dan-ai"]').first.click()
-        expect(self.page.locator('#gptKit')).to_have_text('Xem tính năng bản đầy đủ')
+        expect(self.page.locator('#gptKit')).to_have_text('Xem tính năng Pro')
         self.page.locator('#gptKit').click()
         expect(self.page.locator('#proLock')).to_be_visible()
         expect(self.page.locator('#tab-bilingual')).to_be_hidden()

@@ -6,7 +6,7 @@ Khóa nhóm Kế toán và 5 công cụ AI, cùng giới hạn 3 file mỗi lầ
 
 | Vấn đề trong ZIP | Ảnh hưởng | Bản cập nhật |
 |---|---|---|
-| Bản cập nhật trước vô tình mở khóa quyền dùng thử | Truy cập được tính năng dành cho bản đầy đủ | Khôi phục đúng 10 mục bị khóa; kiểm thử cả link trực tiếp, link cũ và gói dịch ChatGPT |
+| Bản cập nhật trước vô tình mở khóa quyền dùng thử | Truy cập được tính năng dành cho bản Pro | Khôi phục đúng 10 mục bị khóa; kiểm thử cả link trực tiếp, link cũ và gói dịch ChatGPT |
 | Bản cập nhật trước bỏ giới hạn 3 file | Phạm vi dùng thử khác bản gốc | Khôi phục giới hạn cả chọn file/kéo thả; giữ thông báo nhận 3 file đầu |
 | AI phụ thuộc Claude `sample` | Ngoài Artifact không dùng được nhiều mục AI | Cầu nối chép/dán, kiểm tra JSON, tải ảnh trang, hủy tác vụ; giữ native Claude |
 | Bundle từ CDN bị chặn ở môi trường thử | Trang hiện nhưng Excel/Word/ZIP không chạy đủ | Bundle local, tải từ npm có kiểm tra integrity |

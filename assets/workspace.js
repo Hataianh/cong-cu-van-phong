@@ -132,8 +132,8 @@
     <p class="hint-dl">Không lưu nội dung file vào lịch sử dùng công cụ. Dữ liệu bạn tự đưa vào chat được xử lý theo dịch vụ AI bạn chọn.</p></div>`;
   document.body.append(guide);
   if(window.__MOI_CFG.MOI){
-    byId('gptKit').textContent='Xem tính năng bản đầy đủ';
-    const note=document.createElement('p');note.textContent='Gói script dịch Word/Excel chỉ có trong bản đầy đủ, không tải ở bản dùng thử.';
+    byId('gptKit').textContent='Xem tính năng Pro';
+    const note=document.createElement('p');note.textContent='Gói script dịch Word/Excel chỉ có trong bản Pro, không tải ở bản dùng thử.';
     byId('gptKit').before(note);
   }
   const closeGuide=()=>{guide.close();if(location.hash==='#huong-dan-ai')location.hash='';};
